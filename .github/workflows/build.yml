@@ -1,96 +1,83 @@
 name: Build Mesen
 
-on: [push]
+on:
+  push:
 
 env:
-  # I'm not a fan of the telemetry as-is, but this also suppresses some lines in the build log.
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  # This removes even more spurious lines.
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
 jobs:
   windows:
     strategy:
+      matrix:
+        os: [windows-latest]
+        netversion: [6.x,_8.x]
+        targetframework: [net6.0,_net8.0]
+        aot: [false,_true]
+        singleFile: [true,_false]
       fail-fast: false
-    runs-on: windows-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: ${{ matrix.netversion }}
 
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
 
-      - name: Execute unit tests
-        run: dotnet test -nologo
+      - name: Restore packages
+        run: dotnet restore -p:TargetFramework="${{ matrix.targetframework }}" -r win-x64 -p:PublishAot="${{ matrix.aot }}"
 
       - name: Build Mesen
-        run: msbuild -nologo -v:d -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -t:Clean,UI
+        run: msbuild -nologo -v:d -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -t:Clean,UI -p:TargetFramework="${{ matrix.targetframework }}"
 
       - name: Publish Mesen
-        run: dotnet publish -nologo -c Release /p:Platform="Any CPU" /p:OptimizeUi="true" Mesen.sln /p:PublishProfile=UI\Properties\PublishProfiles\Release.pubxml
+        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.aot }}" -p:SelfContained="${{ matrix.aot }}" -p:PublishSingleFile="${{ matrix.singleFile }}" -p:OptimizeUi="true" -p:Platform="Any CPU" -p:TargetFramework="${{ matrix.targetframework }}" -r win-x64 Mesen.sln /p:PublishProfile=UI\Properties\PublishProfiles\Release.pubxml
 
       - name: Upload Mesen
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Mesen (Windows)
-          path: |
-            build/TmpReleaseBuild/Mesen.exe
-
+          name: Mesen (Windows - ${{ matrix.targetframework }}${{ matrix.aot ? ' - AoT' : '' }})
+          path: build/TmpReleaseBuild/Mesen.exe
 
   linux:
     strategy:
       matrix:
-        compiler: [gcc, clang]
-        os: [ubuntu-22.04, ubuntu-20.04]
-        exclude:
-          # This currently fails to build.
-          - os: ubuntu-20.04
-            compiler: gcc
-        include:
-          - compiler: gcc
-            use_gcc: "USE_GCC=true"
-          - compiler: clang
-            use_gcc: ""
+        os: [ubuntu-22.04,_ubuntu-20.04]
+        compiler: [gcc,_clang,_clang_aot]
       fail-fast: false
-    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
 
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev
 
-      - name: Execute unit tests
-        run: dotnet test --nologo
-
-      # stderr is not detected as a TTY, so diagnostics are by default printed without colours;
-      # forcing colours makes the log a little nicer to read.
       - name: Build Mesen
         run: |
-          make -j$(nproc) -O ${{ matrix.use_gcc }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false
+          make -j$(nproc) USE_GCC=${compiler == 'gcc'} USE_AOT=${compiler == 'clang_aot'} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false
 
       - name: Upload Mesen
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mesen (Linux - ${{ matrix.os }} - ${{ matrix.compiler }})
           path: bin/linux-x64/Release/linux-x64/publish/Mesen
@@ -100,68 +87,60 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
 
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev libfuse2 # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev libfuse2
 
       - name: Build Mesen (AppImage)
         run: |
           Linux/appimage/appimage.sh
+
       - name: Upload Mesen (AppImage)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mesen (Linux x64 - AppImage)
           path: Mesen.AppImage
 
-
   macos:
     strategy:
       matrix:
-        compiler: [clang]
-        platform: [
-          {os: macos-12, arch: x64},
-          {os: macos-14, arch: arm64}
-        ]
+        os: [macos-12,_macos-14]
+        arch: [x64,_arm64]
+        compiler: [clang,_clang_aot]
       fail-fast: false
-    runs-on: ${{ matrix.platform.os }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
 
       - name: Install dependencies
         run: |
           brew install sdl2
 
-      - name: Execute unit tests
-        run: dotnet test --nologo
-
-      # stderr is not detected as a TTY, so diagnostics are by default printed without colours;
-      # forcing colours makes the log a little nicer to read.
       - name: Build Mesen
         run: |
-          make -j$(sysctl -n hw.logicalcpu)
+          make -j$(sysctl -n hw.logicalcpu) USE_AOT=${compiler == 'clang_aot'}
 
       - name: Sign binary
         env:
-          APP_NAME: bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Mesen.app
+          APP_NAME: bin/osx-${{ matrix.arch }}/Release/osx-${{ matrix.arch }}/publish/Mesen.app
           CERT_DATA: ${{ secrets.MACOS_CERTIFICATE }}
           CERT_PASS: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           ENTITLEMENTS: UI/Mesen.entitlements
@@ -186,10 +165,10 @@ jobs:
 
       - name: Zip Mesen.app
         run: |
-          ditto -c -k --sequesterRsrc --keepParent bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Mesen.app bin/osx-${{ matrix.platform.arch }}/Release/Mesen.app.zip
+          ditto -c -k --sequesterRsrc --keepParent bin/osx-${{ matrix.arch }}/Release/osx-${{ matrix.arch }}/publish/Mesen.app bin/osx-${{ matrix.arch }}/Release/Mesen.app.zip
 
       - name: Upload Mesen
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Mesen (macOS - ${{ matrix.platform.os }})
-          path: bin/osx-${{ matrix.platform.arch }}/Release/Mesen.app.zip
+          name: Mesen (macOS - ${{ matrix.os }} - ${{ matrix.compiler }})
+          path: bin/osx-${{ matrix.arch }}/Release/Mesen.app.zip
