@@ -2,37 +2,34 @@
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 
-struct TraceRow
-{
-	uint32_t ProgramCounter;
-	CpuType Type;
-	uint8_t ByteCode[8];
-	uint8_t ByteCodeSize;
-	uint32_t LogSize;
-	char LogOutput[500];
+struct TraceRow {
+    uint32_t programCounter; // snake_case for better readability
+    CpuType type;
+    std::array<uint8_t, 8> byteCode; // use std::array for bounded arrays
+    uint8_t byteCodeSize;
+    uint32_t logSize;
+    char logOutput[500]; // consider using std::string for dynamic strings
 };
 
-struct TraceLoggerOptions
-{
-	bool Enabled;
-	bool IndentCode;
-	bool UseLabels;
-	char Condition[1000];
-	char Format[1000];
+struct TraceLoggerOptions {
+    bool enabled;
+    bool indentCode;
+    bool useLabels;
+    std::string condition; // use std::string for dynamic strings
+    std::string format;
 };
 
-class ITraceLogger
-{
+class ITraceLogger {
 protected:
-	bool _enabled = false;
+    bool enabled_ = false; // trailing underscore for member variables
 
 public:
-	static uint64_t NextRowId;
+    static uint64_t nextRowId;
 
-	virtual int64_t GetRowId(uint32_t offset) = 0;
-	virtual void GetExecutionTrace(TraceRow& row, uint32_t offset) = 0;
-	virtual void Clear() = 0;
-	virtual void SetOptions(TraceLoggerOptions options) = 0;
+    virtual int64_t getRowId(uint32_t offset) = 0;
+    virtual void getExecutionTrace(TraceRow& row, uint32_t offset) = 0;
+    virtual void clear() = 0;
+    virtual void setOptions(TraceLoggerOptions options) = 0;
 
-	__forceinline bool IsEnabled() { return _enabled; }
+    [[nodiscard]] bool isEnabled() const { return enabled_; } // const correctness
 };
