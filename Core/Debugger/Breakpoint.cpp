@@ -4,73 +4,53 @@
 #include "Debugger/DebugUtilities.h"
 
 template<uint8_t accessWidth>
-bool Breakpoint::Matches(MemoryOperationInfo& operation, AddressInfo &info)
-{
-	if(operation.MemType == _memoryType && DebugUtilities::IsRelativeMemory(_memoryType)) {
-		for(int i = 0; i < accessWidth; i++) {
-			if((int32_t)operation.Address + i >= _startAddr && (int32_t)operation.Address + i <= _endAddr) {
-				return true;
-			}
-		}
-		return false;
-	} else if(_memoryType == info.Type) {
-		for(int i = 0; i < accessWidth; i++) {
-			if(info.Address + i >= _startAddr && info.Address + i <= _endAddr) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	return false;
+bool Breakpoint::Matches(MemoryOperationInfo& operation, AddressInfo& info) {
+    if (operation.MemType == _memoryType && DebugUtilities::IsRelativeMemory(_memoryType)) {
+        for (int i = 0; i < accessWidth; i++) {
+            if ((_startAddr <= (int32_t)operation.Address + i) && ((int32_t)operation.Address + i <= _endAddr)) {
+                return true;
+            }
+        }
+    } else if (_memoryType == info.Type) {
+        for (int i = 0; i < accessWidth; i++) {
+            if ((_startAddr <= info.Address + i) && (info.Address + i <= _endAddr)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
-bool Breakpoint::HasBreakpointType(BreakpointType type)
-{
-	switch(type) {
-		default:
-		case BreakpointType::Execute: return ((uint8_t)_type & (uint8_t)BreakpointTypeFlags::Execute) != 0;
-		case BreakpointType::Read: return ((uint8_t)_type & (uint8_t)BreakpointTypeFlags::Read) != 0;
-		case BreakpointType::Write: return ((uint8_t)_type & (uint8_t)BreakpointTypeFlags::Write) != 0;
-	}
+bool Breakpoint::HasBreakpointType(BreakpointType type) {
+    return (_type & (uint8_t)type) != 0;
 }
 
-string Breakpoint::GetCondition()
-{
-	return _condition;
+string Breakpoint::GetCondition() {
+    return _condition;
 }
 
-bool Breakpoint::HasCondition()
-{
-	return _condition[0] != 0;
+bool Breakpoint::HasCondition() {
+    return !_condition.empty();
 }
 
-uint32_t Breakpoint::GetId()
-{
-	return _id;
+uint32_t Breakpoint::GetId() {
+    return _id;
 }
 
-CpuType Breakpoint::GetCpuType()
-{
-	return _cpuType;
+CpuType Breakpoint::GetCpuType() {
+    return _cpuType;
 }
 
-bool Breakpoint::IsEnabled()
-{
-	return _enabled;
+bool Breakpoint::IsEnabled() {
+    return _enabled;
 }
 
-bool Breakpoint::IsMarked()
-{
-	return _markEvent;
+bool Breakpoint::IsMarked() {
+    return _markEvent;
 }
 
-bool Breakpoint::IsAllowedForOpType(MemoryOperationType opType)
-{
-	if(_ignoreDummyOperations) {
-		return opType != MemoryOperationType::DummyRead && opType != MemoryOperationType::DummyWrite;
-	}
-	return true;
+bool Breakpoint::IsAllowedForOpType(MemoryOperationType opType) {
+    return !_ignoreDummyOperations || (opType != MemoryOperationType::DummyRead && opType != MemoryOperationType::DummyWrite);
 }
 
 template bool Breakpoint::Matches<1>(MemoryOperationInfo& operation, AddressInfo& info);
