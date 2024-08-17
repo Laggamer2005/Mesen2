@@ -5,74 +5,60 @@
 #include "Debugger/StepBackManager.h"
 #include "Debugger/FrozenAddressManager.h"
 
-enum class StepType;
-class BreakpointManager;
-class CallstackManager;
-class IAssembler;
-class BaseEventManager;
-class CodeDataLogger;
-class ITraceLogger;
-class PpuTools;
-class Emulator;
-struct BaseState;
-enum class EventType;
-enum class MemoryOperationType;
-
-//TODOv2 rename/refactor to BaseDebugger
-class IDebugger
-{
+class IDebugger {
 protected:
-	unique_ptr<StepRequest> _step;
-	unique_ptr<StepBackManager> _stepBackManager;
-
-	FrozenAddressManager _frozenAddressManager;
+    std::unique_ptr<StepRequest> step_;
+    std::unique_ptr<StepBackManager> stepBackManager_;
+    FrozenAddressManager frozenAddressManager_;
 
 public:
-	bool IgnoreBreakpoints = false;
-	bool AllowChangeProgramCounter = false;
-	CpuInstructionProgress InstructionProgress = {};
+    bool ignoreBreakpoints = false;
+    bool allowChangeProgramCounter = false;
+    CpuInstructionProgress instructionProgress = {};
 
-	IDebugger(Emulator* emu) : _stepBackManager(new StepBackManager(emu, this)) {}
-	virtual ~IDebugger() = default;
+    IDebugger(Emulator* emulator) 
+        : stepBackManager_(std::make_unique<StepBackManager>(emulator, this)) {}
 
-	StepRequest* GetStepRequest() { return _step.get(); }
-	bool CheckStepBack() { return _stepBackManager->CheckStepBack(); }
-	bool IsStepBack() { return _stepBackManager->IsRewinding(); }
-	void ResetStepBackCache() { return _stepBackManager->ResetCache(); }
-	void StepBack(int32_t stepCount) { return _stepBackManager->StepBack((StepBackType)stepCount); }
-	virtual StepBackConfig GetStepBackConfig() { return { GetCpuCycleCount(), 0, 0 }; }
+    virtual ~IDebugger() = default;
 
-	FrozenAddressManager& GetFrozenAddressManager() { return _frozenAddressManager; }
+    StepRequest* getStepRequest() { return step_.get(); }
+    bool checkStepBack() { return stepBackManager_->checkStepBack(); }
+    bool isStepBack() { return stepBackManager_->isRewinding(); }
+    void resetStepBackCache() { stepBackManager_->resetCache(); }
+    void stepBack(int32_t stepCount) { stepBackManager_->stepBack(static_cast<StepBackType>(stepCount)); }
+    virtual StepBackConfig getStepBackConfig() { return { getCpuCycleCount(), 0, 0 }; }
 
-	virtual void ResetPrevOpCode() {}
+    FrozenAddressManager& getFrozenAddressManager() { return frozenAddressManager_; }
 
-	virtual void Step(int32_t stepCount, StepType type) = 0;
-	virtual void Reset() = 0;
-	virtual void Run() = 0;
-	
-	virtual void Init() {}
-	virtual void ProcessConfigChange() {}
+    virtual void resetPrevOpcode() {}
 
-	virtual void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) {}
-	virtual void ProcessInputOverrides(DebugControllerState inputOverrides[8]) {}
+    virtual void step(int32_t stepCount, StepType type) = 0;
+    virtual void reset() = 0;
+    virtual void run() = 0;
 
-	virtual void DrawPartialFrame() { }
+    virtual void init() {}
+    virtual void processConfigChange() {}
 
-	virtual DebuggerFeatures GetSupportedFeatures() { return {}; }
-	virtual uint64_t GetCpuCycleCount() { return 0; }
-	virtual uint32_t GetProgramCounter(bool getInstPc) = 0;
-	virtual void SetProgramCounter(uint32_t addr, bool updateDebuggerOnly = false) = 0;
+    virtual void processInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) {}
+    virtual void processInputOverrides(DebugControllerState inputOverrides[8]) {}
 
-	virtual uint8_t GetCpuFlags() { return 0; }
+    virtual void drawPartialFrame() {}
 
-	virtual BreakpointManager* GetBreakpointManager() = 0;
-	virtual CallstackManager* GetCallstackManager() = 0;
-	virtual IAssembler* GetAssembler() = 0;
-	virtual BaseEventManager* GetEventManager() = 0;
-	virtual ITraceLogger* GetTraceLogger() = 0;
-	virtual PpuTools* GetPpuTools() { return nullptr; }
+    virtual DebuggerFeatures getSupportedFeatures() { return {}; }
+    virtual uint64_t getCpuCycleCount() { return 0; }
+    virtual uint32_t getProgramCounter(bool getInstPc) = 0;
+    virtual void setProgramCounter(uint32_t addr, bool updateDebuggerOnly = false) = 0;
 
-	virtual BaseState& GetState() = 0;
-	virtual void GetPpuState(BaseState& state) {};
-	virtual void SetPpuState(BaseState& state) {};
+    virtual uint8_t getCpuFlags() { return 0; }
+
+    virtual BreakpointManager* getBreakpointManager() = 0;
+    virtual CallstackManager* getCallstackManager() = 0;
+    virtual IAssembler* getAssembler() = 0;
+    virtual BaseEventManager* getEventManager() = 0;
+    virtual ITraceLogger* getTraceLogger() = 0;
+    virtual PpuTools* getPpuTools() { return nullptr; }
+
+    virtual BaseState& getState() = 0;
+    virtual void getPpuState(BaseState& state) {}
+    virtual void setPpuState(BaseState& state) {}
 };
