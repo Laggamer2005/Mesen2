@@ -5,86 +5,80 @@
 #include "Utilities/SimpleLock.h"
 #include "SNES/DmaControllerTypes.h"
 
-enum class EventFlags
-{
-	PreviousFrame = 1,
-	RegFirstWrite = 2,
-	RegSecondWrite = 4,
-	WithTargetMemory = 8,
-	SmsVdpPaletteWrite = 16
+enum class EventFlags : uint32_t {
+    PreviousFrame = 1,
+    RegFirstWrite = 2,
+    RegSecondWrite = 4,
+    WithTargetMemory = 8,
+    SmsVdpPaletteWrite = 16
 };
 
-struct DebugEventInfo
-{
-	MemoryOperationInfo Operation;
-	DebugEventType Type;
-	uint32_t ProgramCounter;
-	int16_t Scanline;
-	uint16_t Cycle;
-	int16_t BreakpointId = -1;
-	int8_t DmaChannel = -1;
-	DmaChannelConfig DmaChannelInfo;
-	uint32_t Flags;
-	int32_t RegisterId = -1;
-	MemoryOperationInfo TargetMemory;
-	uint32_t Color = 0;
+struct DebugEventInfo {
+    MemoryOperationInfo operation;
+    DebugEventType type;
+    uint32_t programCounter;
+    int16_t scanline;
+    int16_t cycle;
+    int16_t breakpointId = -1;
+    int8_t dmaChannel = -1;
+    DmaChannelConfig dmaChannelInfo;
+    uint32_t flags;
+    int32_t registerId = -1;
+    MemoryOperationInfo targetMemory;
+    uint32_t color = 0;
 };
 
-struct EventViewerCategoryCfg
-{
-	bool Visible;
-	uint32_t Color;
+struct EventViewerCategoryCfg {
+    bool visible;
+    uint32_t color;
 };
 
-struct BaseEventViewerConfig
-{
-};
+struct BaseEventViewerConfig {};
 
-class BaseEventManager
-{
+class BaseEventManager {
 protected:
-	vector<DebugEventInfo> _debugEvents;
-	vector<DebugEventInfo> _prevDebugEvents;
-	vector<DebugEventInfo> _sentEvents;
+    std::vector<DebugEventInfo> debugEvents;
+    std::vector<DebugEventInfo> prevDebugEvents;
+    std::vector<DebugEventInfo> sentEvents;
 
-	vector<DebugEventInfo> _snapshotCurrentFrame;
-	vector<DebugEventInfo> _snapshotPrevFrame;
-	int16_t _snapshotScanline = -1;
-	int16_t _snapshotScanlineOffset = 0;
-	uint16_t _snapshotCycle = 0;
-	bool _forAutoRefresh = false;
-	SimpleLock _lock;
+    std::vector<DebugEventInfo> snapshotCurrentFrame;
+    std::vector<DebugEventInfo> snapshotPrevFrame;
+    int16_t snapshotScanline = -1;
+    int16_t snapshotScanlineOffset = 0;
+    uint16_t snapshotCycle = 0;
+    bool forAutoRefresh = false;
+    SimpleLock lock;
 
-	virtual bool ShowPreviousFrameEvents() = 0;
+    virtual bool showPreviousFrameEvents() = 0;
 
-	void FilterEvents();
-	void DrawDot(uint32_t x, uint32_t y, uint32_t color, bool drawBackground, uint32_t* buffer);
-	virtual int GetScanlineOffset() { return 0; }
+    void filterEvents();
+    void drawDot(uint32_t x, uint32_t y, uint32_t color, bool drawBackground, uint32_t* buffer);
+    virtual int getScanlineOffset() { return 0; }
 
-	void DrawLine(uint32_t* buffer, FrameInfo size, uint32_t color, uint32_t row);
-	void DrawEvents(uint32_t* buffer, FrameInfo size);
+    void drawLine(uint32_t* buffer, FrameInfo size, uint32_t color, uint32_t row);
+    void drawEvents(uint32_t* buffer, FrameInfo size);
 
-	virtual void ConvertScanlineCycleToRowColumn(int32_t& x, int32_t& y) = 0;
-	virtual void DrawScreen(uint32_t* buffer) = 0;
-	void DrawEvent(DebugEventInfo& evt, bool drawBackground, uint32_t* buffer);
+    virtual void convertScanlineCycleToRowColumn(int32_t& x, int32_t& y) = 0;
+    virtual void drawScreen(uint32_t* buffer) = 0;
+    void drawEvent(DebugEventInfo& evt, bool drawBackground, uint32_t* buffer);
 
 public:
-	virtual ~BaseEventManager() {}
+    virtual ~BaseEventManager() {}
 
-	virtual void SetConfiguration(BaseEventViewerConfig& config) = 0;
+    virtual void setConfiguration(BaseEventViewerConfig& config) = 0;
 
-	virtual void AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId = -1) = 0;
-	virtual void AddEvent(DebugEventType type) = 0;
+    virtual void addEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId = -1) = 0;
+    virtual void addEvent(DebugEventType type) = 0;
 
-	void GetEvents(DebugEventInfo* eventArray, uint32_t& maxEventCount);
-	uint32_t GetEventCount();
-	virtual void ClearFrameEvents();
+    void getEvents(DebugEventInfo* eventArray, uint32_t& maxEventCount);
+    uint32_t getEventCount();
+    virtual void clearFrameEvents();
 
-	virtual EventViewerCategoryCfg GetEventConfig(DebugEventInfo& evt) = 0;
+    virtual EventViewerCategoryCfg getEventConfig(DebugEventInfo& evt) = 0;
 
-	virtual uint32_t TakeEventSnapshot(bool forAutoRefresh) = 0;
-	virtual FrameInfo GetDisplayBufferSize() = 0;
-	virtual DebugEventInfo GetEvent(uint16_t scanline, uint16_t cycle) = 0;
-	
-	void GetDisplayBuffer(uint32_t* buffer, uint32_t bufferSize);
+    virtual uint32_t takeEventSnapshot(bool forAutoRefresh) = 0;
+    virtual FrameInfo getDisplayBufferSize() = 0;
+    virtual DebugEventInfo getEvent(uint16_t scanline, uint16_t cycle) = 0;
+
+    void getDisplayBuffer(uint32_t* buffer, uint32_t bufferSize);
 };
