@@ -8,28 +8,16 @@
 enum class MemoryType;
 enum class CpuType : uint8_t;
 
-struct MemoryOperationInfo
-{
-	uint32_t Address;
-	int32_t Value;
-	MemoryOperationType Type;
-	MemoryType MemType;
+struct MemoryOperationInfo {
+    uint32_t Address;
+    int32_t Value;
+    MemoryOperationType Type;
+    MemoryType MemType;
 
-	MemoryOperationInfo()
-	{
-		Address = 0;
-		Value = 0;
-		Type = (MemoryOperationType)0;
-		MemType = (MemoryType)0;
-	}
+    MemoryOperationInfo() : Address(0), Value(0), Type((MemoryOperationType)0), MemType((MemoryType)0) {}
 
-	MemoryOperationInfo(uint32_t addr, int32_t val, MemoryOperationType opType, MemoryType memType)
-	{
-		Address = addr;
-		Value = val;
-		Type = opType;
-		MemType = memType;
-	}
+    MemoryOperationInfo(uint32_t addr, int32_t val, MemoryOperationType opType, MemoryType memType)
+        : Address(addr), Value(val), Type(opType), MemType(memType) {}
 };
 
 enum class BreakpointTypeFlags
