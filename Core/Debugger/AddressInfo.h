@@ -1,10 +1,10 @@
 #pragma once
-#include "pch.h"
 
+// Forward declaration of MemoryType
 enum class MemoryType;
 
-struct AddressInfo
-{
-	int32_t Address;
-	MemoryType Type;
+// Struct to hold address information
+struct AddressInfo {
+    int32_t address;  // Conventional naming convention uses camelCase
+    MemoryType type;
 };
