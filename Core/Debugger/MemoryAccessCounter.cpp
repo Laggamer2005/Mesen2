@@ -1,46 +1,28 @@
-#include "pch.h"
-#include "Debugger/MemoryAccessCounter.h"
-#include "Debugger/DebugBreakHelper.h"
-#include "Debugger/Debugger.h"
-#include "Debugger/DebugUtilities.h"
-#include "Debugger/MemoryDumper.h"
-#include "Shared/Interfaces/IConsole.h"
+#include <vector>
+#include <iostream>
 
-MemoryAccessCounter::MemoryAccessCounter(Debugger* debugger)
-{
-	_debugger = debugger;
+class MemoryAccessCounter {
+public:
+    MemoryAccessCounter(Debugger* debugger)
+        : _debugger(debugger), _enableBreakOnUninitRead(debugger->GetConsole()->GetMasterClock() < 1000) {}
 
-	//Enable breaking on uninit reads when debugger is opened at power on
-	_enableBreakOnUninitRead = _debugger->GetConsole()->GetMasterClock() < 1000;
+    template <uint8_t accessWidth>
+    ReadResult ProcessMemoryRead(const AddressInfo& addressInfo, uint64_t masterClock) {
+        if (addressInfo.Address < 0) {
+            return ReadResult::Normal;
+        }
 
-	for(int i = (int)DebugUtilities::GetLastCpuMemoryType() + 1; i < DebugUtilities::GetMemoryTypeCount(); i++) {
-		uint32_t memSize = _debugger->GetMemoryDumper()->GetMemorySize((MemoryType)i);
-		_counters[i].reserve(memSize);
-		for(uint32_t j = 0; j < memSize; j++) {
-			_counters[i].push_back({});
-		}
-	}
-}
-
-template<uint8_t accessWidth>
-ReadResult MemoryAccessCounter::ProcessMemoryRead(AddressInfo &addressInfo, uint64_t masterClock)
-{
-	if(addressInfo.Address < 0) {
-		return ReadResult::Normal;
-	}
-
-	ReadResult result = ReadResult::Normal;
-	for(int i = 0; i < accessWidth; i++) {
-		AddressCounters& counts = _counters[(int)addressInfo.Type][addressInfo.Address+i];
-		if(_enableBreakOnUninitRead && counts.WriteStamp == 0 && DebugUtilities::IsVolatileRam(addressInfo.Type)) {
-			result = (ReadResult)((int)result | (int)(counts.ReadStamp == 0 ? ReadResult::FirstUninitRead : ReadResult::UninitRead));
-		}
-		counts.ReadStamp = masterClock;
-		counts.ReadCounter++;
-	}
-	return result;
-}
-
+        ReadResult result = ReadResult::Normal;
+        for (int i = 0; i < accessWidth; i++) {
+            AddressCounters& counts = _counters[addressInfo.Type][addressInfo.Address_+_i];
+            if (_enableBreakOnUninitRead && counts.WriteStamp == 0 && DebugUtilities::IsVolatileRam(addressInfo.Type)) {
+                result = static_cast<ReadResult>(static_cast<int>(result) | (counts.ReadStamp == 0 ? ReadResult::FirstUninitRead : ReadResult::UninitRead));
+            }
+            counts.ReadStamp = masterClock;
+            counts.ReadCounter++;
+        }
+        return result;
+    }
 template<uint8_t accessWidth>
 void MemoryAccessCounter::ProcessMemoryWrite(AddressInfo& addressInfo, uint64_t masterClock)
 {
