@@ -11,277 +11,278 @@ class Debugger;
 class LabelManager;
 class IDebugger;
 
+// Enum values could be replaced with constexpr variables or static const variables
+// This enum could be replaced with a constants class
 enum EvalOperators : int64_t
 {
-	//Binary operators
-	Multiplication = 2000000000000,
-	Division,
-	Modulo,
-	Addition,
-	Substration,
-	ShiftLeft,
-	ShiftRight,
-	SmallerThan,
-	SmallerOrEqual,
-	GreaterThan,
-	GreaterOrEqual,
-	Equal,
-	NotEqual,
-	BinaryAnd,
-	BinaryXor,
-	BinaryOr,
-	LogicalAnd,
-	LogicalOr,
+    //Binary operators
+    Multiplication = 2000000000000,
+    Division,
+    Modulo,
+    Addition,
+    Substration,
+    ShiftLeft,
+    ShiftRight,
+    SmallerThan,
+    SmallerOrEqual,
+    GreaterThan,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    BinaryAnd,
+    BinaryXor,
+    BinaryOr,
+    LogicalAnd,
+    LogicalOr,
 
-	//Unary operators
-	Plus,
-	Minus,
-	BinaryNot,
-	LogicalNot,
-	AbsoluteAddress,
-	ReadDword, //Read dword (32-bit)
+    //Unary operators
+    Plus,
+    Minus,
+    BinaryNot,
+    LogicalNot,
+    AbsoluteAddress,
+    ReadDword, //Read dword (32-bit)
 
-	//Used to read ram address
-	Bracket, //Read byte (8-bit)
-	Braces, //Read word (16-bit)
+    //Used to read ram address
+    Bracket, //Read byte (8-bit)
+    Braces, //Read word (16-bit)
 
-	//Special value, not used as an operator
-	Parenthesis,
+    //Special value, not used as an operator
+    Parenthesis,
 };
 
+// Same as above
 enum EvalValues : int64_t
 {
-	RegA = 3000000000000,
-	RegX,
-	RegY,
+    RegA = 3000000000000,
+    RegX,
+    RegY,
 
-	R0,
-	R1,
-	R2,
-	R3,
-	R4,
-	R5,
-	R6,
-	R7,
-	R8,
-	R9,
-	R10,
-	R11,
-	R12,
-	R13,
-	R14,
-	R15,
-	SrcReg,
-	DstReg,
-	SFR,
-	PBR,
-	RomBR,
-	RamBR,
+    R0,
+    R1,
+    R2,
+    R3,
+    R4,
+    R5,
+    R6,
+    R7,
+    R8,
+    R9,
+    R10,
+    R11,
+    R12,
+    R13,
+    R14,
+    R15,
+    SrcReg,
+    DstReg,
+    SFR,
+    PBR,
+    RomBR,
+    RamBR,
 
-	RegB,
-	RegC,
-	RegD,
-	RegE,
-	RegF,
-	RegH,
-	RegL,
-	RegAF,
-	RegBC,
-	RegDE,
-	RegHL,
-	RegIX,
-	RegIY,
+    RegB,
+    RegC,
+    RegD,
+    RegE,
+    RegF,
+    RegH,
+    RegL,
+    RegAF,
+    RegBC,
+    RegDE,
+    RegHL,
+    RegIX,
+    RegIY,
 
-	RegAltA,
-	RegAltB,
-	RegAltC,
-	RegAltD,
-	RegAltE,
-	RegAltF,
-	RegAltH,
-	RegAltL,
-	RegAltAF,
-	RegAltBC,
-	RegAltDE,
-	RegAltHL,
-	RegI,
-	RegR,
+    RegAltA,
+    RegAltB,
+    RegAltC,
+    RegAltD,
+    RegAltE,
+    RegAltF,
+    RegAltH,
+    RegAltL,
+    RegAltAF,
+    RegAltBC,
+    RegAltDE,
+    RegAltHL,
+    RegI,
+    RegR,
 
-	RegTR,
-	RegTRB,
-	RegRP,
-	RegDP,
-	RegDR,
-	RegSR,
-	RegK,
-	RegM,
-	RegN,
+    RegTR,
+    RegTRB,
+    RegRP,
+    RegDP,
+    RegDR,
+    RegSR,
+    RegK,
+    RegM,
+    RegN,
 
-	RegPB,
-	RegP,
-	RegMult,
-	
-	RegMDR,
-	RegMAR,
-	RegDPR,
+    RegPB,
+    RegP,
+    RegMult,
 
-	RegSP,
-	RegDB,
-	RegPS,
+    RegMDR,
+    RegMAR,
+    RegDPR,
 
-	RegPC,
-	PpuFrameCount,
-	PpuCycle,
-	PpuHClock,
-	PpuScanline,
+    RegSP,
+    RegDB,
+    RegPS,
 
-	PpuVramAddress,
-	PpuTmpVramAddress,
+    RegPC,
+    PpuFrameCount,
+    PpuCycle,
+    PpuHClock,
+    PpuScanline,
 
-	Nmi,
-	Irq,
-	Value,
-	Address,
-	MemoryAddress,
-	IsWrite,
-	IsRead,
-	IsDma,
-	IsDummy,
-	OpProgramCounter,
+    PpuVramAddress,
+    PpuTmpVramAddress,
 
-	RegPS_Carry,
-	RegPS_Zero,
-	RegPS_Interrupt,
-	RegPS_Memory,
-	RegPS_Index,
-	RegPS_Decimal,
-	RegPS_Overflow,
-	RegPS_Negative,
+    Nmi,
+    Irq,
+    Value,
+    Address,
+    MemoryAddress,
+    IsWrite,
+    IsRead,
+    IsDma,
+    IsDummy,
+    OpProgramCounter,
 
-	Sprite0Hit,
-	VerticalBlank,
-	SpriteOverflow,
-	SpriteCollision,
+    RegPS_Carry,
+    RegPS_Zero,
+    RegPS_Interrupt,
+    RegPS_Memory,
+    RegPS_Index,
+    RegPS_Decimal,
+    RegPS_Overflow,
+    RegPS_Negative,
 
-	SpcDspReg,
+    Sprite0Hit,
+    VerticalBlank,
+    SpriteOverflow,
+    SpriteCollision,
 
-	PceVramTransferDone,
-	PceSatbTransferDone,
-	PceScanlineDetected,
-	PceIrqVdc2,
-	PceSelectedPsgChannel,
-	PceSelectedVdcRegister,
+    SpcDspReg,
 
-	SmsVdpAddressReg,
-	SmsVdpCodeReg,
+    PceVramTransferDone,
+    PceSatbTransferDone,
+    PceScanlineDetected,
+    PceIrqVdc2,
+    PceSelectedPsgChannel,
+    PceSelectedVdcRegister,
 
-	CPSR,
+    SmsVdpAddressReg,
+    SmsVdpCodeReg,
 
-	FirstLabelIndex,
+    CPSR,
+
+    FirstLabelIndex,
 };
 
 enum class EvalResultType : int32_t
 {
-	Numeric = 0,
-	Boolean = 1,
-	Invalid = 2,
-	DivideBy0 = 3,
-	OutOfScope = 4
+    Numeric = 0,
+    Boolean = 1,
+    Invalid = 2,
+    DivideBy0 = 3,
+    OutOfScope = 4
 };
 
 class StringHasher
 {
 public:
-	size_t operator()(const std::string& t) const 
-	{
-		//Quick hash for expressions - most are likely to have different lengths, and not expecting dozens of breakpoints, either, so this should be fine.
-		return t.size();
-	}
+    size_t operator()(const std::string& t) const
+    {
+        return std::hash<std::string>{}(t);
+    }
 };
 
 struct ExpressionData
 {
-	vector<int64_t> RpnQueue;
-	vector<string> Labels;
+    vector<int64_t> RpnQueue;
+    vector<string> Labels;
 };
 
 class ExpressionEvaluator
 {
 private:
-	static const vector<string> _binaryOperators;
-	static const vector<int> _binaryPrecedence;
-	static const vector<string> _unaryOperators;
-	static const vector<int> _unaryPrecedence;
-	static const unordered_set<string> _operators;
+    static const vector<string> _binaryOperators;
+    static const vector<int> _binaryPrecedence;
+    static const vector<string> _unaryOperators;
+    static const vector<int> _unaryPrecedence;
+    static const unordered_set<string> _operators;
 
-	unordered_map<string, ExpressionData, StringHasher> _cache;
-	SimpleLock _cacheLock;
-	
-	Debugger* _debugger;
-	IDebugger* _cpuDebugger;
-	LabelManager* _labelManager;
-	CpuType _cpuType;
-	MemoryType _cpuMemory;
+    unordered_map<string, ExpressionData, StringHasher> _cache;
+    SimpleLock _cacheLock;
 
-	bool IsOperator(string token, int &precedence, bool unaryOperator);
-	EvalOperators GetOperator(string token, bool unaryOperator);
-	unordered_map<string, int64_t>* GetAvailableTokens();
-	bool CheckSpecialTokens(string expression, size_t &pos, string &output, ExpressionData &data);
+    Debugger* _debugger;
+    IDebugger* _cpuDebugger;
+    LabelManager* _labelManager;
+    CpuType _cpuType;
+    MemoryType _cpuMemory;
 
-	unordered_map<string, int64_t>& GetSnesTokens();
-	int64_t GetSnesTokenValue(int64_t token, EvalResultType& resultType);
+    // Consider using virtual functions and interfaces for better polymorphism
+    bool IsOperator(string token, int &precedence, bool unaryOperator);
+    EvalOperators GetOperator(string token, bool unaryOperator);
+    unordered_map<string, int64_t>* GetAvailableTokens();
+    bool CheckSpecialTokens(string expression, size_t &pos, string &output, ExpressionData &data);
 
-	unordered_map<string, int64_t>& GetSpcTokens();
-	int64_t GetSpcTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetSnesTokens();
+    int64_t GetSnesTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetGsuTokens();
-	int64_t GetGsuTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetSpcTokens();
+    int64_t GetSpcTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetCx4Tokens();
-	int64_t GetCx4TokenValue(int64_t token, EvalResultType& resultType);
-	
-	unordered_map<string, int64_t>& GetNecDspTokens();
-	int64_t GetNecDspTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetGsuTokens();
+    int64_t GetGsuTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetGameboyTokens();
-	int64_t GetGameboyTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetCx4Tokens();
+    int64_t GetCx4TokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetNesTokens();
-	int64_t GetNesTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetNecDspTokens();
+    int64_t GetNecDspTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetPceTokens();
-	int64_t GetPceTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetGameboyTokens();
+    int64_t GetGameboyTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetSmsTokens();
-	int64_t GetSmsTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetNesTokens();
+    int64_t GetNesTokenValue(int64_t token, EvalResultType& resultType);
 
-	unordered_map<string, int64_t>& GetGbaTokens();
-	int64_t GetGbaTokenValue(int64_t token, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetPceTokens();
+    int64_t GetPceTokenValue(int64_t token, EvalResultType& resultType);
 
-	bool ReturnBool(int64_t value, EvalResultType& resultType);
+    unordered_map<string, int64_t>& GetSmsTokens();
+    int64_t GetSmsTokenValue(int64_t token, EvalResultType& resultType);
 
-	int64_t ProcessSharedTokens(string token);
-	
-	string GetNextToken(string expression, size_t &pos, ExpressionData &data, bool &success, bool previousTokenIsOp);
-	bool ProcessSpecialOperator(EvalOperators evalOp, std::stack<EvalOperators> &opStack, std::stack<int> &precedenceStack, vector<int64_t> &outputQueue);
-	bool ToRpn(string expression, ExpressionData &data);
-	int64_t PrivateEvaluate(string expression, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo, bool &success);
-	ExpressionData* PrivateGetRpnList(string expression, bool& success);
+    unordered_map<string, int64_t>& GetGbaTokens();
+    int64_t GetGbaTokenValue(int64_t token, EvalResultType& resultType);
 
-protected:
+    bool ReturnBool(int64_t value, EvalResultType& resultType);
+
+    int64_t ProcessSharedTokens(string token);
+
+    string GetNextToken(string expression, size_t &pos, ExpressionData &data, bool &success, bool previousTokenIsOp);
+    bool ProcessSpecialOperator(EvalOperators evalOp, std::stack<EvalOperators> &opStack, std::stack<int> &precedenceStack, vector<int64_t> &outputQueue);
+    bool ToRpn(string expression, ExpressionData &data);
+    int64_t PrivateEvaluate(string expression, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo, bool &success);
+    ExpressionData* PrivateGetRpnList(string expression, bool& success);
 
 public:
-	ExpressionEvaluator(Debugger* debugger, IDebugger* cpuDebugger, CpuType cpuType);
+    ExpressionEvaluator(Debugger* debugger, IDebugger* cpuDebugger, CpuType cpuType);
 
-	int64_t Evaluate(ExpressionData &data, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo);
-	int64_t Evaluate(string expression, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo);
-	ExpressionData GetRpnList(string expression, bool &success);
+    int64_t Evaluate(ExpressionData &data, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo);
+    int64_t Evaluate(string expression, EvalResultType &resultType, MemoryOperationInfo &operationInfo, AddressInfo& addressInfo);
+    ExpressionData GetRpnList(string expression, bool &success);
 
-	void GetTokenList(char* tokenList);
+    void GetTokenList(char* tokenList);
 
-	bool Validate(string expression);
+    bool Validate(string expression);
 
 #if _DEBUG
-	void RunTests();
+    void RunTests();
 #endif
 };
