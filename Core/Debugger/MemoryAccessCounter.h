@@ -13,39 +13,50 @@ class Gsu;
 class Cx4;
 class Gameboy;
 
-struct AddressCounters
-{
-	uint64_t ReadStamp;
-	uint64_t WriteStamp;
-	uint64_t ExecStamp;
-	uint32_t ReadCounter;
-	uint32_t WriteCounter;
-	uint32_t ExecCounter;
+struct AddressCounters {
+    uint64_t readStamp;
+    uint64_t writeStamp;
+    uint64_t execStamp;
+    uint32_t readCounter;
+    uint32_t writeCounter;
+    uint32_t execCounter;
 };
 
-enum class ReadResult
-{
-	Normal,
-	FirstUninitRead,
-	UninitRead
+enum class ReadResult : uint8_t {
+    Normal,
+    FirstUninitRead,
+    UninitRead
 };
 
-class MemoryAccessCounter
-{
+class MemoryAccessCounter {
 private:
-	vector<AddressCounters> _counters[DebugUtilities::GetMemoryTypeCount()];
-
-	Debugger* _debugger = nullptr;
-	bool _enableBreakOnUninitRead = false;
+    std::vector<AddressCounters> counters_[DebugUtilities::GetMemoryTypeCount()];
+    Debugger* debugger_;
+    bool enableBreakOnUninitRead_;
 
 public:
-	MemoryAccessCounter(Debugger *debugger);
+    MemoryAccessCounter(Debugger* debugger) : debugger_(debugger), enableBreakOnUninitRead_(false) {}
 
-	template<uint8_t accessWidth = 1> ReadResult ProcessMemoryRead(AddressInfo& addressInfo, uint64_t masterClock);
-	template<uint8_t accessWidth = 1> void ProcessMemoryWrite(AddressInfo& addressInfo, uint64_t masterClock);
-	template<uint8_t accessWidth = 1> void ProcessMemoryExec(AddressInfo& addressInfo, uint64_t masterClock);
+    template<uint8_t accessWidth = 1>
+    ReadResult ProcessMemoryRead(AddressInfo& addressInfo, uint64_t masterClock) {
+        // Implementation
+    }
 
-	void ResetCounts();
+    template<uint8_t accessWidth = 1>
+    void ProcessMemoryWrite(AddressInfo& addressInfo, uint64_t masterClock) {
+        // Implementation
+    }
 
-	void GetAccessCounts(uint32_t offset, uint32_t length, MemoryType memoryType, AddressCounters counts[]);
+    template<uint8_t accessWidth = 1>
+    void ProcessMemoryExec(AddressInfo& addressInfo, uint64_t masterClock) {
+        // Implementation
+    }
+
+    void ResetCounts() {
+        // Implementation
+    }
+
+    void GetAccessCounts(uint32_t offset, uint32_t length, MemoryType memoryType, AddressCounters counts[]) {
+        // Implementation
+    }
 };
