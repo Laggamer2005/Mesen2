@@ -11,46 +11,40 @@ class BaseEventManager;
 struct ExpressionData;
 enum class MemoryOperationType;
 
-class BreakpointManager
-{
+class BreakpointManager {
 private:
-	static constexpr int BreakpointTypeCount = (int)MemoryOperationType::PpuRenderingRead + 1;
+    static constexpr int BreakpointTypeCount = static_cast<int>(MemoryOperationType::PpuRenderingRead) + 1;
 
-	Debugger* _debugger;
-	IDebugger *_cpuDebugger;
-	CpuType _cpuType;
-	BaseEventManager *_eventManager;
-	
-	vector<Breakpoint> _breakpoints[BreakpointTypeCount];
-	vector<ExpressionData> _rpnList[BreakpointTypeCount];
-	bool _hasBreakpoint;
-	bool _hasBreakpointType[BreakpointTypeCount] = {};
+    Debugger* _debugger;
+    IDebugger* _cpuDebugger;
+    CpuType _cpuType;
+    BaseEventManager* _eventManager;
 
-	unique_ptr<ExpressionEvaluator> _bpExpEval;
+    std::vector<Breakpoint> _breakpoints[BreakpointTypeCount];
+    std::vector<ExpressionData> _rpnList[BreakpointTypeCount];
+    bool _hasBreakpoint;
+    bool _hasBreakpointType[BreakpointTypeCount] = {};
 
-	BreakpointType GetBreakpointType(MemoryOperationType type);
-	template<uint8_t accessWidth> int InternalCheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo &address, bool processMarkedBreakpoints);
+    std::unique_ptr<ExpressionEvaluator> _bpExpEval;
+
+    BreakpointType GetBreakpointType(MemoryOperationType type);
+    template<uint8_t accessWidth>
+    int InternalCheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo& address, bool processMarkedBreakpoints);
 
 public:
-	BreakpointManager(Debugger *debugger, IDebugger* cpuDebugger, CpuType cpuType, BaseEventManager* eventManager);
+    BreakpointManager(Debugger* debugger, IDebugger* cpuDebugger, CpuType cpuType, BaseEventManager* eventManager);
 
-	void SetBreakpoints(Breakpoint breakpoints[], uint32_t count);
-	
-	__forceinline bool HasBreakpoints() { return _hasBreakpoint; }
-	__forceinline bool HasBreakpointForType(MemoryOperationType opType);
-	template<uint8_t accessWidth = 1> __forceinline int CheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo &address, bool processMarkedBreakpoints);
+    void SetBreakpoints(Breakpoint breakpoints[], uint32_t count);
+
+    __forceinline bool HasBreakpoints() { return _hasBreakpoint; }
+    __forceinline bool HasBreakpointForType(MemoryOperationType opType) {
+        return _hasBreakpointType[static_cast<int>(opType)];
+    }
+    template<uint8_t accessWidth = 1>
+    __forceinline int CheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo& address, bool processMarkedBreakpoints) {
+        if (!_hasBreakpointType[static_cast<int>(operationInfo.Type)]) {
+            return -1;
+        }
+        return InternalCheckBreakpoint<accessWidth>(operationInfo, address, processMarkedBreakpoints);
+    }
 };
-
-__forceinline bool BreakpointManager::HasBreakpointForType(MemoryOperationType opType)
-{
-	return _hasBreakpointType[(int)opType];
-}
-
-template<uint8_t accessWidth>
-__forceinline int BreakpointManager::CheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo &address, bool processMarkedBreakpoints)
-{
-	if(!_hasBreakpointType[(int)operationInfo.Type]) {
-		return -1;
-	}
-	return InternalCheckBreakpoint<accessWidth>(operationInfo, address, processMarkedBreakpoints);
-}
