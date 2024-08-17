@@ -1,28 +1,31 @@
 #pragma once
 #include "pch.h"
 
-class IAssembler
-{
-public:
-	virtual ~IAssembler() {}
-	virtual uint32_t AssembleCode(string code, uint32_t startAddress, int16_t* assembledCode) = 0;
+// Use a namespace for your custom enumerations and classes
+namespace Assembler {
+
+enum class AssemblerResult : int16_t {
+    OK = 0,
+    EndOfLine,
+    ParsingError,
+    OutOfRangeJump,
+    LabelRedefinition,
+    MissingOperand,
+    OperandOutOfRange,
+    InvalidHex,
+    InvalidSpaces,
+    TrailingText,
+    UnknownLabel,
+    InvalidInstruction,
+    InvalidBinaryValue,
+    InvalidOperands,
+    InvalidLabel
 };
 
-enum AssemblerSpecialCodes
-{
-	OK = 0,
-	EndOfLine = -1,
-	ParsingError = -2,
-	OutOfRangeJump = -3,
-	LabelRedefinition = -4,
-	MissingOperand = -5,
-	OperandOutOfRange = -6,
-	InvalidHex = -7,
-	InvalidSpaces = -8,
-	TrailingText = -9,
-	UnknownLabel = -10,
-	InvalidInstruction = -11,
-	InvalidBinaryValue = -12,
-	InvalidOperands = -13,
-	InvalidLabel = -14,
+class IAssembler {
+public:
+    virtual ~IAssembler() {}
+    virtual int16_t AssembleCode(const std::string& code, uint32_t startAddress, int16_t* assembledCode) = 0;
 };
+
+}  // namespace Assembler
